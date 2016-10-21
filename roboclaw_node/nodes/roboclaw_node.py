@@ -141,8 +141,8 @@ class Node:
         rospy.init_node("roboclaw_node",log_level=rospy.DEBUG)
         rospy.on_shutdown(self.shutdown)
         rospy.loginfo("Connecting to roboclaw")
-        dev_name = rospy.get_param("~dev", "/dev/ttyACM0")
-        baud_rate = int(rospy.get_param("~baud", "115200"))
+        dev_name = rospy.get_param("~dev", "/dev/roboclaw")
+        baud_rate = int(rospy.get_param("~baud", "460800"))
 
         self.address = int(rospy.get_param("~address", "128"))
         if self.address > 0x87 or self.address < 0x80:
