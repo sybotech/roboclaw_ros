@@ -259,8 +259,8 @@ class Node:
         if linear_x < -self.MAX_SPEED:
             linear_x = -self.MAX_SPEED
 
-        vr = linear_x + twist.angular.z * self.BASE_WIDTH / 2.0  # m/s
-        vl = linear_x - twist.angular.z * self.BASE_WIDTH / 2.0
+        vr = linear_x - twist.angular.z * self.BASE_WIDTH / 2.0  # m/s
+        vl = linear_x + twist.angular.z * self.BASE_WIDTH / 2.0
 
         vr_ticks = int(vr * self.TICKS_PER_METER)  # ticks/s
         vl_ticks = int(vl * self.TICKS_PER_METER)
@@ -274,7 +274,9 @@ class Node:
                   roboclaw.ForwardM1(self.address, 0)
                   roboclaw.ForwardM2(self.address, 0)
               else:
-                  roboclaw.SpeedM1M2(self.address, vr_ticks, vl_ticks)
+                  #Repalced to implement watchdog
+                  #roboclaw.SpeedM1M2(self.address, vr_ticks, vl_ticks)
+                  roboclaw.SpeedDistanceM1M2(self.address, vr_ticks, int(abs(vr_ticks*0.04)), vl_ticks, int(abs(vl_ticks*0.04)), 1)
         except OSError as e:
             rospy.logwarn("SpeedM1M2 OSError: %d", e.errno)
             rospy.logdebug(e)
