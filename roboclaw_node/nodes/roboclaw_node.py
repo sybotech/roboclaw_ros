@@ -116,7 +116,6 @@ class EncoderOdom:
 
         self.odom_pub.publish(odom)
 
-
 class Node:
     def __init__(self):
         self.lock = threading.Lock()
@@ -213,41 +212,39 @@ class Node:
             # TODO need find solution to the OSError11 looks like sync problem with serial
             status1, enc1, crc1 = None, None, None
             status2, enc2, crc2 = None, None, None
+            statusC, amp1, amp2 = None, None, None
 
-            try:
-                with self.lock:
-                  status1, enc1, crc1 = roboclaw.ReadEncM1(self.address)
-            except ValueError:
-                pass
-            except OSError as e:
-                rospy.logwarn("ReadEncM1 OSError: %d", e.errno)
-                rospy.logdebug(e)
 
-	    if (enc1 != None):
-                rospy.loginfo("ReadEncM1: %d", enc1)
-            else:
-                rospy.loginfo("Error Reading enc M1")
+            with self.lock:
+                try:
+                    status1, enc1, crc1 = roboclaw.ReadEncM1(self.address)
+                except ValueError:
+                    pass
 
-            try:
-                with self.lock:
-                  status2, enc2, crc2 = roboclaw.ReadEncM2(self.address)
-            except ValueError:
-                pass
-            except OSError as e:
-                rospy.logwarn("ReadEncM2 OSError: %d", e.errno)
-                rospy.logdebug(e)
-
-            if (enc2 != None):
-                rospy.loginfo("ReadEncM2: %d", enc2)
-            else:
-                rospy.loginfo("Error Reading enc M2")
+                try:
+                    status2, enc2, crc2 = roboclaw.ReadEncM2(self.address)
+                except ValueError:
+                    pass
+                try:
+                    status1c, amp1, amp2 = roboclaw.ReadCurrents(self.address)
+                except ValueError:
+                    pass
 
 
             if (enc1 != None) & (enc2 != None):
                 rospy.logdebug(" Encoders %d %d" % (enc1, enc2))
                 self.encodm.update_publish(enc1, enc2)
-
                 self.updater.update()
+            else:
+                rospy.logdebug("Error Reading enc")
+
+            if (amp1 != None) & (amp2 != None):
+                rospy.logdebug(" Currents %d %d" % (amp1, amp2))
+                self.encodm.update_publish(enc1, enc2)
+                self.updater.update()
+            else:
+                rospy.logdebug("Error Reading Currents")
+
             r_time.sleep()
 
     def cmd_vel_callback(self, twist):
