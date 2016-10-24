@@ -176,7 +176,8 @@ class Node:
         roboclaw.SpeedM1M2(self.address, 0, 0)
         roboclaw.ResetEncoders(self.address)
 
-        self.MAX_SPEED = float(rospy.get_param("~max_speed", "2.0"))
+        self.MAX_ABS_LINEAR_SPEED = float(rospy.get_param("~max_abs_linear_speed", "1.0"))
+        self.MAX_ABS_ANGULAR_SPEED = float(rospy.get_param("~max_abs_angular_speed", "1.0"))
         self.TICKS_PER_METER = float(rospy.get_param("~ticks_per_meter", "4342.2"))
         self.BASE_WIDTH = float(rospy.get_param("~base_width", "0.315"))
 
@@ -190,7 +191,8 @@ class Node:
         rospy.logdebug("dev %s", dev_name)
         rospy.logdebug("baud %d", baud_rate)
         rospy.logdebug("address %d", self.address)
-        rospy.logdebug("max_speed %f", self.MAX_SPEED)
+        rospy.logdebug("max_abs_linear_speed %f", self.MAX_ABS_LINEAR_SPEED)
+        rospy.logdebug("max_abs_angular_speed %f", self.MAX_ABS_ANGULAR_SPEED)
         rospy.logdebug("ticks_per_meter %f", self.TICKS_PER_METER)
         rospy.logdebug("base_width %f", self.BASE_WIDTH)
 
@@ -251,13 +253,14 @@ class Node:
         self.last_set_speed_time = rospy.get_rostime()
 
         linear_x = twist.linear.x
-        if linear_x > self.MAX_SPEED:
-            linear_x = self.MAX_SPEED
-        if linear_x < -self.MAX_SPEED:
-            linear_x = -self.MAX_SPEED
+        angular_z = twist.angular.z
+        if abs(linear_x) > self.MAX_ABS_LINEAR_SPEED:
+            linear_x = copysign(self.MAX_ABS_LINEAR_SPEED, linear_x)
+        if abs(angular_z) > self.MAX_ABS_ANGULAR_SPEED:
+            angular_z = copysign(self.MAX_ABS_ANGULAR_SPEED, angular_z)
 
-        vr = linear_x - twist.angular.z * self.BASE_WIDTH / 2.0  # m/s
-        vl = linear_x + twist.angular.z * self.BASE_WIDTH / 2.0
+        vr = linear_x - angular_z * self.BASE_WIDTH / 2.0  # m/s
+        vl = linear_x + angular_z * self.BASE_WIDTH / 2.0
 
         vr_ticks = int(vr * self.TICKS_PER_METER)  # ticks/s
         vl_ticks = int(vl * self.TICKS_PER_METER)
