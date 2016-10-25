@@ -5,8 +5,14 @@ Added thread to manage both odom and command in the same time.
 WIP, please use at your own risk
 
 # Changes
-21/10/2016
-Added thread usage for simultaneous odom and command
-Watchdog hack using SpeedDistanceM1M2 function 
-Inverted l/r motor command
-Added Currents feedback on rosdebug
+25/10/2016  
+Split max speed in max linear and angular  
+Added custom msg. Needed to modify name of script  
+Publish commaned wheels speed and motors currents readings  
+
+21/10/2016  
+Added thread usage for simultaneous odom and command  
+Watchdog hack using SpeedDistanceM1M2 function   
+Inverted l/r motor command  
+Added Currents feedback on rosdebug  
+
