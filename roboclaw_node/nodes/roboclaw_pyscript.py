@@ -143,8 +143,8 @@ class Node:
         rospy.loginfo("Connecting to roboclaw")
         dev_name = rospy.get_param("~dev", "/dev/roboclaw")
         baud_rate = int(rospy.get_param("~baud", "460800"))
-        self.wheels_speeds_pub = rospy.Publisher('/motors/speeds', Wheels_speeds, queue_size=1)
-        self.motors_currents_pub = rospy.Publisher('/motors/currents', Motors_currents, queue_size=1)
+        self.wheels_speeds_pub = rospy.Publisher('/motors/commanded_speeds', Wheels_speeds, queue_size=1)
+        self.motors_currents_pub = rospy.Publisher('/motors/read_currents', Motors_currents, queue_size=1)
 
         self.address = int(rospy.get_param("~address", "128"))
         if self.address > 0x87 or self.address < 0x80:
@@ -245,8 +245,10 @@ class Node:
 
             if (amp1 != None) & (amp2 != None):
                 rospy.logdebug(" Currents %d %d" % (amp1, amp2))
-                self.encodm.update_publish(enc1, enc2)
-                self.updater.update()
+                amps=Motors_currents()
+                amps.motor1=float(amp1)/100
+                amps.motor2=float(amp2)/100
+                self.motors_currents_pub.publish(amps)
             else:
                 rospy.logdebug("Error Reading Currents")
 
@@ -267,6 +269,12 @@ class Node:
 
         vr_ticks = int(vr * self.TICKS_PER_METER)  # ticks/s
         vl_ticks = int(vl * self.TICKS_PER_METER)
+
+        v_wheels= Wheels_speeds()
+        v_wheels.wheel1=vl
+        v_wheels.wheel2=vr
+        self.wheels_speeds_pub.publish(v_wheels)
+
 
         rospy.logdebug("vr_ticks:%d vl_ticks: %d", vr_ticks, vl_ticks)
 
