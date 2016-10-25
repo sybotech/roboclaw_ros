@@ -6,6 +6,7 @@ import diagnostic_updater
 import roboclaw_driver.roboclaw_driver as roboclaw
 import rospy
 import tf
+from roboclaw_node.msg import Motors_currents, Wheels_speeds
 from geometry_msgs.msg import Quaternion, Twist
 from nav_msgs.msg import Odometry
 import threading
@@ -142,6 +143,8 @@ class Node:
         rospy.loginfo("Connecting to roboclaw")
         dev_name = rospy.get_param("~dev", "/dev/roboclaw")
         baud_rate = int(rospy.get_param("~baud", "460800"))
+        self.wheels_speeds_pub = rospy.Publisher('/motors/speeds', Wheels_speeds, queue_size=1)
+        self.motors_currents_pub = rospy.Publisher('/motors/currents', Motors_currents, queue_size=1)
 
         self.address = int(rospy.get_param("~address", "128"))
         if self.address > 0x87 or self.address < 0x80:
