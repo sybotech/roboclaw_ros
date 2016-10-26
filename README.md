@@ -5,6 +5,9 @@ Added thread to manage both odom and command in the same time.
 WIP, please use at your own risk  
 
 # Changes
+26/10/2016  
+Added acceleration limit  
+
 25/10/2016  
 Split max speed in max linear and angular  
 Added custom msg. Needed to modify name of script  
