@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from math import pi, cos, sin
+from math import pi, cos, sin, copysign
 
 import diagnostic_msgs
 import diagnostic_updater
@@ -183,6 +183,7 @@ class Node:
         self.MAX_ABS_ANGULAR_SPEED = float(rospy.get_param("~max_abs_angular_speed", "1.0"))
         self.TICKS_PER_METER = float(rospy.get_param("~ticks_per_meter", "4342.2"))
         self.BASE_WIDTH = float(rospy.get_param("~base_width", "0.315"))
+        self.ACC_LIM = float(rospy.get_param("~acc_lim", "0.1"))
 
         self.encodm = EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH)
         self.last_set_speed_time = rospy.get_rostime()
@@ -281,9 +282,16 @@ class Node:
                     roboclaw.ForwardM1(self.address, 0)
                     roboclaw.ForwardM2(self.address, 0)
                 else:
-                    #Repalced to implement watchdog
+                    #Replaced to implement watchdog
                     #roboclaw.SpeedM1M2(self.address, vr_ticks, vl_ticks)
-                    roboclaw.SpeedDistanceM1M2(self.address, vr_ticks, int(abs(vr_ticks*0.04)), vl_ticks, int(abs(vl_ticks*0.04)), 1)
+                    #Replaced to implement acc
+                    #roboclaw.SpeedDistanceM1M2(self.address, vr_ticks, int(abs(vr_ticks*0.04)), vl_ticks, int(abs(vl_ticks*0.04)), 1)
+                    rospy.logdebug(" Acc ticks %d" % (int(self.ACC_LIM * self.TICKS_PER_METER)))
+                    roboclaw.SpeedAccelDistanceM1(self.address, int(self.ACC_LIM * self.TICKS_PER_METER),vr_ticks, int(abs(vr_ticks*0.04)),1)
+                    roboclaw.SpeedAccelDistanceM2(self.address, int(self.ACC_LIM * self.TICKS_PER_METER),vl_ticks, int(abs(vl_ticks*0.04)),1)
+                    #roboclaw.SpeedAccelDistanceM1M2(self.address, 4000,vr_ticks, int(abs(vr_ticks*0.04)), vl_ticks, int(abs(vl_ticks*0.04)), 1)
+
+
             except OSError as e:
                 rospy.logwarn("SpeedM1M2 OSError: %d", e.errno)
                 rospy.logdebug(e)
