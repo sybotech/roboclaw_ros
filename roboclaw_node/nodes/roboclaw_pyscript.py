@@ -184,6 +184,9 @@ class Node:
         self.TICKS_PER_METER = float(rospy.get_param("~ticks_per_meter", "4342.2"))
         self.BASE_WIDTH = float(rospy.get_param("~base_width", "0.315"))
         self.ACC_LIM = float(rospy.get_param("~acc_lim", "0.1"))
+        
+        self.DIR_L = float(rospy.get_param("~dir_left", "1.0"))
+        self.DIR_R = float(rospy.get_param("~dir_right", "1.0"))
 
         self.encodm = EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH)
         self.last_set_speed_time = rospy.get_rostime()
@@ -265,8 +268,8 @@ class Node:
             vr = linear_x - angular_z * self.BASE_WIDTH / 2.0  # m/s
             vl = linear_x + angular_z * self.BASE_WIDTH / 2.0
 
-            vr_ticks = int(vr * self.TICKS_PER_METER)  # ticks/s
-            vl_ticks = int(vl * self.TICKS_PER_METER)
+            vr_ticks = int(vr * self.TICKS_PER_METER * self.DIR_R)  # ticks/s
+            vl_ticks = int(vl * self.TICKS_PER_METER * self.DIR_L)
 
             v_wheels= Wheels_speeds()
             v_wheels.wheel1=vl
